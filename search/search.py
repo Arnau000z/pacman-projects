@@ -122,29 +122,130 @@ def depth_first_search(problem):
     """
     Search the deepest nodes in the search tree first.
 
-    Your search algorithm needs to return a list of actions that reaches the
-    goal. Make sure to implement a graph search algorithm.
-
-    To get started, you might want to try some of these simple commands to
-    understand the search problem that is being passed in:
-
-    print("Start:", problem.get_start_state())
-    print("Is the start a goal?", problem.is_goal_state(problem.get_start_state()))
-    print("Start's successors:", problem.get_successors(problem.get_start_state()))
+    This search algorithm explores a path as deep as possible before backtracking.
+    It uses a stack (LIFO) to track the nodes to visit next and ensures it does
+    not revisit nodes already visited.
     """
-    "*** YOUR CODE HERE ***"
+
+    # Pila para los nodos que exploraremos. Cada elemento es una tupla (estado, acciones hasta ese estado)
+    stack = util.Stack()
+    
+    # Lista para mantener los nodos ya visitados
+    visited = []
+
+    # El estado inicial del problema
+    start_state = problem.get_start_state()
+    
+    # Añadimos el estado inicial a la pila. El segundo elemento es una lista vacía que irá acumulando las acciones.
+    stack.push((start_state, []))
+
+    # Mientras la pila no esté vacía
+    while not stack.is_empty():
+        # Tomamos el nodo más profundo (LIFO)
+        current_state, actions = stack.pop()
+
+        # Si hemos llegado al estado objetivo, devolvemos la secuencia de acciones
+        if problem.is_goal_state(current_state):
+            return actions
+
+        # Si no hemos visitado el estado actual
+        if current_state not in visited:
+            # Lo marcamos como visitado
+            visited.append(current_state)
+
+            # Obtenemos los sucesores del estado actual
+            for n in problem.get_successors(current_state):
+                # Añadimos el sucesor a la pila junto con la secuencia de acciones que nos ha llevado hasta aquí
+                new_actions = actions + [n[1]]
+                stack.push((n[0], new_actions))
+
+    # Si la pila se vacía y no hemos encontrado una solución, devolvemos una lista vacía
+    return []
+
+        
     util.raise_not_defined()
 
-
-
+    
+    
 def breadth_first_search(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
+    
+    # Cola para mantener los nodos que vamos a explorar (FIFO).
+    queue = util.Queue()
+    
+    # Conjunto para mantener los nodos ya visitados.
+    visited = set()
+
+    # Estado inicial del problema.
+    start_state = problem.get_start_state()
+
+    # Añadimos el estado inicial a la cola. El segundo valor es la lista de acciones hasta ese estado.
+    queue.push((start_state, []))
+
+    # Mientras la cola no esté vacía, seguimos explorando
+    while not queue.is_empty():
+        # Sacamos el nodo más superficial (FIFO)
+        current_state, actions = queue.pop()
+
+        # Si el estado actual es el estado objetivo, devolvemos la secuencia de acciones.
+        if problem.is_goal_state(current_state):
+            return actions
+
+        # Si no hemos visitado el estado actual
+        if current_state not in visited:
+            # Marcamos el estado como visitado
+            visited.add(current_state)
+
+            # Obtenemos los sucesores del estado actual
+            for successor, action, step_cost in problem.get_successors(current_state):
+                # Si el sucesor no ha sido visitado, lo agregamos a la cola
+                if successor not in visited:
+                    new_actions = actions + [action]
+                    queue.push((successor, new_actions))
+
+    # Si la cola se vacía y no encontramos una solución, devolvemos una lista vacía.
+    return []
+
     util.raise_not_defined()
 
 def uniform_cost_search(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
+    from util import PriorityQueue  # Import the priority queue for UCS
+
+    # Create a priority queue to store nodes to explore
+    pq = PriorityQueue()
+    # Set of visited nodes
+    visited = set()
+
+    # Get the starting state and push it onto the priority queue
+    start_state = problem.get_start_state()
+    pq.push((start_state, []), 0)  # (state, path), with initial cost 0
+
+    while not pq.is_empty():
+        # Pop the state with the lowest cost
+        current_state, actions = pq.pop()
+
+        # Check if this state has been visited
+        if current_state in visited:
+            continue
+        
+        # Mark the current state as visited
+        visited.add(current_state)
+
+        # Check if we reached the goal
+        if problem.is_goal_state(current_state):
+            return actions  # Return the path to the goal
+
+        # Get the successors of the current state
+        for successor, action, step_cost in problem.get_successors(current_state):
+            if successor not in visited:
+                # Calculate the new cost to reach this successor
+                new_cost = problem.get_cost_of_actions(actions + [action])
+                # Push the successor onto the priority queue with its cost
+                pq.push((successor, actions + [action]), new_cost)
+
+    return []  # Return an empty list if no path is found
+
     util.raise_not_defined()
 
 def null_heuristic(state, problem=None):
