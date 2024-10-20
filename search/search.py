@@ -115,7 +115,7 @@ class SearchNode:
     #         return self.__state == __o.__state
     #     return False
 
-    # # def __hash__(self) -> int:
+    # # def __hash__(sjelf) -> int:
     # #     return hash(self.__state)
 
 def depth_first_search(problem):
